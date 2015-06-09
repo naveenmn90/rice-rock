@@ -1,4 +1,4 @@
-# rice-rock (astroids)
+# rice-rock (astroids) - draft [under development]
 A javascript implementation of rice-rock game
 
 rice-rock (astroids) is implemented using html5 canvas and javascript
