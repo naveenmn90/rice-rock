@@ -24,6 +24,11 @@ window.requestAnimFrame = (function() {
     };
 })();
 
+Number.prototype.mod = function(n) {
+    //console.log("overidden mod");
+    return ((this%n)+n)%n;
+};
+
 function onload() {
     width = window.innerWidth;
     height = window.innerHeight;
@@ -212,8 +217,10 @@ function onload() {
             self.angle += self.angle_vel;
             
             //position update
-            self.pos[0] = (self.pos[0] + self.vel[0]) % width;
-            self.pos[1] = (self.pos[1] + self.vel[1]) % height;
+            self.pos[0] = (self.pos[0] + self.vel[0]).mod(width);
+            self.pos[1] = (self.pos[1] + self.vel[1]).mod(height);
+            
+            console.log("position : " + self.pos);
             //friction update
             self.vel[0] *= (1 - c);
             self.vel[1] *= (1 - c);
@@ -420,10 +427,10 @@ function onload() {
         time += 1;
         center = debris_info.get_center();
         size = debris_info.get_size();
-        wtime = (time / 8) % center[0];
+        wtime = (time / 8) % 100;
         //console.log(wtime);
         canvas.drawImage(nebula_image,0,0, nebula_info.get_size()[0], nebula_info.get_size()[1], 0,0, width, height);
-        canvas.drawImage(debris_image, 0, 0, (size[0]-2*wtime), size[1], 
+        canvas.drawImage(debris_image,0, 0, (size[0]-2*wtime), size[1], 
                                     (10*wtime), 0, (width-2.5*wtime), height);
         //canvas.drawImage(debris_image, 0, 0, size[0], size[1], 
         //                            0, 0, width, height);
