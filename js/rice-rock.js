@@ -11,12 +11,41 @@ var explosion_group = [];
 var timer = "undefined";
 var asteroid_info;
 var keydown = {};
+var FPS = 60;
+var extra_size = 40;
+
+
+
+
+window.requestAnimFrame = (function() {
+    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame ||
+    function(callback) {
+        window.setTimeout(callback, 1000 / FPS);
+    };
+})();
+
 function onload() {
+    width = window.innerWidth;
+    height = window.innerHeight;
     var canvas = document.createElement("canvas");
     var ctx = canvas.getContext("2d");
     canvas.width = width;
     canvas.height = height;
     document.body.appendChild(canvas);
+    
+    
+    
+    
+   // function drawStroked(text, x, y) {
+        ctx.font = "40px Sans-serif"
+        ctx.strokeStyle = 'cyan';
+        ctx.lineWidth = 8;
+       // ctx.strokeText(text, x, y);
+        ctx.fillStyle = 'white';
+        //ctx.fillText(text, x, y);
+    //}
+    
+    //drawStroked("37°", 50, 150);
     
     function ImageInfo( center, size, radius, lifespan , animated) {
         var self = this;
@@ -126,8 +155,10 @@ function onload() {
         self.image = image;
         self.image_center = info.get_center();
         self.image_size = info.get_size();
-        self.radius = info.get_radius();
-             
+        self.radius = info.get_radius() + extra_size/2;
+        
+
+          
         self.get_pos = function(){
             return self.pos;
         }
@@ -142,7 +173,7 @@ function onload() {
                 canvas.save();
                 canvas.translate(self.pos[0], self.pos[1]);
                 canvas.rotate(self.angle);
-                canvas.drawImage(self.image,90, 0,self.image_size[0], self.image_size[1], -self.image_size[0]/2, -self.image_size[1]/2, self.image_size[0],self.image_size[1]/* self.angle*/);
+                canvas.drawImage(self.image,90, 0,self.image_size[0], self.image_size[1], -(self.image_size[0] + extra_size)/2, -(self.image_size[1] + extra_size)/2, self.image_size[0] + extra_size,self.image_size[1] + extra_size/* self.angle*/);
                 canvas.restore();
                 
             }
@@ -150,7 +181,7 @@ function onload() {
                 canvas.save();
                 canvas.translate(self.pos[0], self.pos[1]);
                 canvas.rotate(self.angle);
-                canvas.drawImage(self.image,0,0,self.image_size[0], self.image_size[1], -self.image_size[0]/2, -self.image_size[1]/2, self.image_size[0],self.image_size[1]/* self.angle*/);
+                canvas.drawImage(self.image,0,0,self.image_size[0], self.image_size[1], -(self.image_size[0] + extra_size)/2, -(self.image_size[1] + extra_size)/2, self.image_size[0] + extra_size,self.image_size[1] + extra_size/* self.angle*/);
                 canvas.restore();
             }
         }
@@ -327,22 +358,16 @@ function onload() {
         }
     }
                     
-    function click(pos){
+    function start(){
         //global started, score, lives
-        var center = [width / 2, height / 2]
-        var size = splash_info.get_size()
-        var inwidth = (center[0] - size[0] / 2) < pos[0] < (center[0] + size[0] / 2)
-        var inheight = (center[1] - size[1] / 2) < pos[1] < (center[1] + size[1] / 2)
-        if (!started && inwidth && inheight) {
+        if (!started) {
             started = true;
             score = 0;
             lives = 3;
             if("undefined" !== timer) 
                 clearInterval(timer);
-            else {
-                //console.log("timer started");
-                timer = setInterval(rock_spawner, 1000);
-            }
+            timer = setInterval(rock_spawner, 1000);
+            
             
         }
     }
@@ -363,7 +388,9 @@ function onload() {
             keydown['38'] = true;
         }
         if (key.keyCode == 13 && keydown['13'] == null) {
-            my_ship.shoot();
+            if(!started) start();
+            else 
+                my_ship.shoot();
             keydown['13'] = true;
         }
             
@@ -383,6 +410,7 @@ function onload() {
         missile_group = [];
         rock_group = [];
         started = false;
+        clearInterval(timer);
     }
     
     function draw(canvas){
@@ -409,8 +437,10 @@ function onload() {
         hits = group_collide(rock_group, my_ship);
         lives -= hits;
         // if lives are exhausted restart the game
-        if (lives <= 0)
+        if (lives <= 0) {
+            live = 0;
             restart_game();
+        }
         // update and draw missiles
         process_sprite_group(missile_group,canvas);
         score += group_group_collide(rock_group, missile_group);
@@ -420,8 +450,8 @@ function onload() {
         my_ship.update();
         canvas.fillText("Lives", 50, 50);//, 25, "White")    
         canvas.fillText("Score", width - 150, 50);//, 25, "White")
-        canvas.fillText(lives, 50, 80);//, 25, "White")
-        canvas.fillText(score, width - 150, 80);//, 25, "White")
+        canvas.fillText(lives, 50, 90);//, 25, "White")
+        canvas.fillText(score, width - 150, 90);//, 25, "White")
         
         if (!started) {
             canvas.drawImage(splash_image, 0, 0,
@@ -435,18 +465,16 @@ function onload() {
     function main() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         draw(ctx);
-        requestAnimationFrame(main);
+        window.requestAnimFrame(main);
     }
     
-   
+
     
     
     main();
     
     document.addEventListener("keydown", keydown_handler);
     document.addEventListener("keyup", keyup_handler);
-    
-    click([400,300]);
 }
 
 
